@@ -2,7 +2,18 @@
 // but you can add more tests if needed.
 
 const supertest = require('supertest')
-const server = require('./src/app.js')
+const app = require('./src/app');
+
+let server; // http.Server
+
+beforeAll((done) => {
+  server = app.listen(done);
+});
+
+afterAll((done) => {
+  // after all test are executed, shutdown server
+  server.close(done);
+});
 
 describe('data-storage-api-node', () => {
   test('PUT', async () => {
