@@ -1,3 +1,4 @@
+import { DuplicateRepositoryObjectError, NotFoundError } from "../common/errors";
 import { ObjectId, PersistedRepositoryObject } from "./persisted";
 
 export interface RepositoryClient {
@@ -19,20 +20,44 @@ export class InMemoryRepositoryClient implements RepositoryClient {
     }
 
     async clear(): Promise<void> {
-        throw Error('not implemented');
+        this.store.clear();
     }
 
     async create(persistedRepositoryObject: PersistedRepositoryObject): Promise<PersistedRepositoryObject> {
-        throw Error('not implemented');
+        const key = persistedRepositoryObjectToKey(persistedRepositoryObject);
+
+        // NOTE: normally we can delegate to S3
+        if (this.store.has(key)) {
+            console.error(`Duplicate PersistedRepositoryObject found for repository:${persistedRepositoryObject.repository} oid:${persistedRepositoryObject.oid}.`);
+            throw new DuplicateRepositoryObjectError();
+        }
+
+        this.store.set(key, persistedRepositoryObject);
+        return persistedRepositoryObject;
     }
 
     async delete(repository: string, oid: ObjectId): Promise<void> {
-        throw Error('not implemented');
+        const key = toKey(repository, oid);
+        this.store.delete(key);
     }
 
     async get(repository: string, oid: ObjectId): Promise<PersistedRepositoryObject> {
-        throw Error('not implemented');
+        const key = toKey(repository, oid);
+        const persistedRepositoryObject = this.store.get(key);
+        if (persistedRepositoryObject) {
+            return persistedRepositoryObject;
+        } else {
+            console.error(`PersistedRepositoryObject not found for repository:${repository} oid:${oid}.`);
+            throw new NotFoundError();
+        }
     }
+}
+
+export function persistedRepositoryObjectToKey(persistedRepositoryObject: PersistedRepositoryObject) {
+    return toKey(persistedRepositoryObject.repository, persistedRepositoryObject.oid);
+}
+export function toKey(repository: string, oid: ObjectId) {
+    return `${repository}/${oid}`;
 }
 
 /**
