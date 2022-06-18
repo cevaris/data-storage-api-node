@@ -1,0 +1,19 @@
+{
+  "name": "data-storage-api-node",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A coding exercise for Node.js candidates at GitHub",
+  "repository": "https://github.com/github-interviews/data-storage-api-node",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest test.js",
+    "test-watch": "jest --watch --notify --notifyMode=change test.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "jest": "^25.1.0",
+    "supertest": "^4.0.2"
+  }
+}
