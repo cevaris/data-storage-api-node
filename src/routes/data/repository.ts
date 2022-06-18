@@ -1,17 +1,22 @@
 import express from 'express';
 import { toSha256Hex } from '../../common/hashing';
+import { bodyToText } from '../../middleware/bodyToString';
 import { ObjectId, PersistedRepositoryObject } from '../../storage/persisted';
 import { repositoryClient } from '../../storage/repository';
 
 module.exports = (app: express.Express) => {
     app.put('/data/:repository',
+
+        // inject middleware, parses request body and assigns to req.body value as a string
+        bodyToText,
+
         async (req: PutRepositoryRequest, res: express.Response, next: express.NextFunction) => {
             // TODO: validate params
-            
+
             const repository = req.params.repository;
             const blob = req.body;
             const now: Date = new Date();
-            const oid: ObjectId = toSha256Hex(req.body);
+            const oid: ObjectId = toSha256Hex(blob);
 
             const persistedRepositoryObject: PersistedRepositoryObject = {
                 oid,
@@ -28,10 +33,11 @@ module.exports = (app: express.Express) => {
             }
 
             const response: PutRepositoryResponse = {
-                oid: 'oidoidoid',
-                size: req.body.length,
+                oid,
+                size: blob.length,
             };
-            return res.json(response);
+
+            return res.status(201).json(response);
         });
 };
 

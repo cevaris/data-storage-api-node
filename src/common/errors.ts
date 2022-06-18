@@ -7,6 +7,15 @@ export class ApiError extends Error {
     }
 }
 
+/**
+ * 400s
+ */
+export class BodyTooLargeError extends ApiError {
+    constructor(message: string) {
+        super(400, message);
+        Object.setPrototypeOf(this, BodyTooLargeError.prototype);
+    }
+}
 export class DuplicateRepositoryObjectError extends ApiError {
     constructor() {
         super(400, 'Duplicate. Repository Object already exists.');
@@ -15,9 +24,23 @@ export class DuplicateRepositoryObjectError extends ApiError {
 }
 
 
+/**
+ * 404s
+ */
 export class NotFoundError extends ApiError {
     constructor() {
         super(404);
         Object.setPrototypeOf(this, NotFoundError.prototype);
+    }
+}
+
+
+/**
+ * 500s
+ */
+export class FailedToParseBodyError extends ApiError {
+    constructor(message: string) {
+        super(500, message);
+        Object.setPrototypeOf(this, FailedToParseBodyError.prototype);
     }
 }

@@ -18,3 +18,4 @@ class ConsoleLogger implements Logger {
 }
 
 export const logger: Logger = new ConsoleLogger();
+module.exports = logger;

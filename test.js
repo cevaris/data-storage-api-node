@@ -3,6 +3,7 @@
 
 const supertest = require('supertest')
 const app = require('./src/app');
+const logger = require('./src/common/logger');
 
 let server; // http.Server
 
