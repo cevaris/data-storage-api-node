@@ -11,5 +11,6 @@ export function apiResponse(res: express.Response, status: number, message?: str
 
     res
         .status(status)
-        .send(body);
+        .send(body)
+        .end();
 }

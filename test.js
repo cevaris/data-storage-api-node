@@ -1,9 +1,10 @@
 // The existing tests in this file should not be modified,
 // but you can add more tests if needed.
 
-const supertest = require('supertest')
 const app = require('./src/app');
-const logger = require('./src/common/logger');
+const logger = require('./src/common/logger').logger;
+const repositoryClient = require('./src/storage/repository').repositoryClient;
+const supertest = require('supertest')
 
 let server; // http.Server
 
@@ -17,6 +18,12 @@ beforeAll((done) => {
 
   server = app.listen(done);
 });
+
+beforeEach((done) => {
+  // clears db to before each test case, to prevent impacting each others tests state
+  repositoryClient.clear()
+    .then(() => done());
+})
 
 /**
  * spin own the server after tests complete.
@@ -67,7 +74,7 @@ describe('data-storage-api-node', () => {
       .get(`/data/my-repo/${putResult1.body.oid}`)
       .expect(200)
       .then(response => {
-        expect(response.body).toEqual('something')
+        expect(response.text).toEqual('something')
       })
   })
 
@@ -108,7 +115,7 @@ describe('data-storage-api-node', () => {
       .get(`/data/other-repo/${dupHash}`)
       .expect(200)
       .then(response => {
-        expect(response.body).toEqual('something')
+        expect(response.text).toEqual('something')
       })
   })
 

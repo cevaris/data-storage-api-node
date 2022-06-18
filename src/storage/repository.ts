@@ -9,11 +9,18 @@ export interface RepositoryClient {
     get(repository: string, oid: ObjectId): Promise<PersistedRepositoryObject>;
 }
 
+export function persistedRepositoryObjectToKey(persistedRepositoryObject: PersistedRepositoryObject) {
+    return toKey(persistedRepositoryObject.repository, persistedRepositoryObject.oid);
+}
+export function toKey(repository: string, oid: ObjectId) {
+    return `${repository}/${oid}`;
+}
+
 /**
  * Mocks remote blob store like Google Cloud Storage or AWS S3.
  * Used for testing and local dev.
  */
-export class InMemoryRepositoryClient implements RepositoryClient {
+export default class InMemoryRepositoryClient implements RepositoryClient {
     store: Map<string, PersistedRepositoryObject>;
 
     constructor() {
@@ -43,7 +50,11 @@ export class InMemoryRepositoryClient implements RepositoryClient {
 
     async delete(repository: string, oid: ObjectId): Promise<void> {
         const key = toKey(repository, oid);
-        this.store.delete(key);
+        const result = this.store.delete(key);
+        if (!result) {
+            // key was not found
+            throw new NotFoundError();
+        }
     }
 
     async get(repository: string, oid: ObjectId): Promise<PersistedRepositoryObject> {
@@ -58,17 +69,4 @@ export class InMemoryRepositoryClient implements RepositoryClient {
     }
 }
 
-export function persistedRepositoryObjectToKey(persistedRepositoryObject: PersistedRepositoryObject) {
-    return toKey(persistedRepositoryObject.repository, persistedRepositoryObject.oid);
-}
-export function toKey(repository: string, oid: ObjectId) {
-    return `${repository}/${oid}`;
-}
-
-/**
- * Fake S3 storage implementation that we would normally use, outside an assesment project.
- * For now just reusing the InMemoryRepository for local dev.
- */
-class AwsS3RepositoryClient extends InMemoryRepositoryClient { }
-
-export const repositoryClient: RepositoryClient = new AwsS3RepositoryClient();
+export const repositoryClient: RepositoryClient = new InMemoryRepositoryClient();
