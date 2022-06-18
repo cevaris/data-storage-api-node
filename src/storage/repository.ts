@@ -26,7 +26,11 @@ export class InMemoryRepositoryClient implements RepositoryClient {
     async create(persistedRepositoryObject: PersistedRepositoryObject): Promise<PersistedRepositoryObject> {
         const key = persistedRepositoryObjectToKey(persistedRepositoryObject);
 
-        // NOTE: normally we can delegate to S3
+        // NOTE: because we are doing a read + write operation here, it opens us up to race conditions.
+        //       this is not an issue with the in-memory implementation, rather when we end up productionalizing a S3 or GCS client.
+        //       
+        //       when using S3 or GCS, we should def use a database transaction to properly handle and duplicate entries to resolve 
+        //       any issues overwriting producution blob store repository objects.
         if (this.store.has(key)) {
             console.error(`Duplicate PersistedRepositoryObject found for repository:${persistedRepositoryObject.repository} oid:${persistedRepositoryObject.oid}.`);
             throw new DuplicateRepositoryObjectError();
