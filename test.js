@@ -10,6 +10,10 @@ let server; // http.Server
  * spin up a server for every test class.
  */
 beforeAll((done) => {
+  // disable noisy error logging
+  // use console.log directly if needed
+  jest.spyOn(logger, 'error').mockImplementation(() => { });
+
   server = app.listen(done);
 });
 

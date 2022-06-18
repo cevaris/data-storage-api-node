@@ -1,4 +1,5 @@
 import { DuplicateRepositoryObjectError, NotFoundError } from "../common/errors";
+import { logger } from "../common/logger";
 import { ObjectId, PersistedRepositoryObject } from "./persisted";
 
 export interface RepositoryClient {
@@ -32,7 +33,7 @@ export class InMemoryRepositoryClient implements RepositoryClient {
         //       when using S3 or GCS, we should def use a database transaction to properly handle and duplicate entries to resolve 
         //       any issues overwriting producution blob store repository objects.
         if (this.store.has(key)) {
-            console.error(`Duplicate PersistedRepositoryObject found for repository:${persistedRepositoryObject.repository} oid:${persistedRepositoryObject.oid}.`);
+            logger.error(`Duplicate PersistedRepositoryObject found for repository:${persistedRepositoryObject.repository} oid:${persistedRepositoryObject.oid}.`);
             throw new DuplicateRepositoryObjectError();
         }
 
@@ -51,7 +52,7 @@ export class InMemoryRepositoryClient implements RepositoryClient {
         if (persistedRepositoryObject) {
             return persistedRepositoryObject;
         } else {
-            console.error(`PersistedRepositoryObject not found for repository:${repository} oid:${oid}.`);
+            logger.error(`PersistedRepositoryObject not found for repository:${repository} oid:${oid}.`);
             throw new NotFoundError();
         }
     }
