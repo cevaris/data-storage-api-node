@@ -2,7 +2,7 @@
 // but you can add more tests if needed.
 
 const supertest = require('supertest')
-const server = require('./server.js')
+const server = require('./src/app.js')
 
 describe('data-storage-api-node', () => {
   test('PUT', async () => {
