@@ -1,11 +1,11 @@
 import { app } from './src/app';
+import { PORT } from './src/common/config';
 import { logger } from './src/common/logger';
 
 if (require.main === module) {
   // Start server only when we run this on the command line and explicitly ignore this while testing
 
-  const port = process.env.PORT || 3000
-  app.listen((port), () => {
-    logger.info(`App listening at http://localhost:${port}`)
+  app.listen((PORT), () => {
+    logger.info(`App listening at http://localhost:${PORT}`)
   })
 }

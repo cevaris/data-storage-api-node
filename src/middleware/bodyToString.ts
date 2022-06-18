@@ -1,4 +1,5 @@
 import express from 'express';
+import { MAX_BLOB_LENGTH } from '../common/config';
 import { BodyTooLargeError, FailedToParseBodyError } from '../common/errors';
 import { logger } from '../common/logger';
 
@@ -20,9 +21,9 @@ export function bodyToText(
     req
         .on('data', (chunk: any) => {
             currSize += chunk.length;
-            if (currSize > 10 * 1000 * 1000) {
+            if (currSize > MAX_BLOB_LENGTH) {
                 // stop uploading when limit is reached, return failure to client
-                return next(new BodyTooLargeError(`Body exceeded the ${10 * 1000 * 1000} length limit.`));
+                return next(new BodyTooLargeError(`Body exceeded the ${MAX_BLOB_LENGTH} length limit.`));
             }
 
             body.push(chunk);
