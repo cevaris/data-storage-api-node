@@ -6,10 +6,16 @@ const app = require('./src/app');
 
 let server; // http.Server
 
+/**
+ * spin up a server for every test class.
+ */
 beforeAll((done) => {
   server = app.listen(done);
 });
 
+/**
+ * spin own the server after tests complete.
+ */
 afterAll((done) => {
   // after all test are executed, shutdown server
   server.close(done);
