@@ -51,7 +51,7 @@ export class InvalidRepositoryName extends ApiError {
  */
 export class NotFoundError extends ApiError {
     constructor() {
-        super(404);
+        super(404, "Not Found.");
         Object.setPrototypeOf(this, NotFoundError.prototype);
     }
 }

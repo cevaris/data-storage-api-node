@@ -117,4 +117,24 @@ describe("data-storage-api-node extended", () => {
         });
     });
 
+    test('returns 404 when PUT with repository and objectId', async () => {
+        // note oid are generated on the backend and cannot be manually set by client.
+
+        const body = 'hello world!';
+
+        // note custom OIDs are not allowed
+        const resp = await request(server)
+            .put('/data/apples/customOID')
+            .send(body);
+
+        expect(resp.status).toBe(404);
+        expect(resp.text).toBeTruthy();
+        expect(JSON.parse(resp.text)).toStrictEqual({
+            error: {
+                status: 404,
+                message: 'Not Found.'
+            }
+        });
+    });
+
 })

@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApiError, ApiErrorRenderable } from './common/errors';
+import { ApiError, ApiErrorRenderable, NotFoundError } from './common/errors';
 import { logger } from './common/logger';
 
 export const app: express.Express = express();
@@ -14,6 +14,12 @@ app.disable('x-powered-by');
  * Routes
  */
 require('./routes/data/repository')(app)
+
+
+// handle undefined routes as 404
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    next(new NotFoundError())
+});
 
 /**
  * Global error handling.
