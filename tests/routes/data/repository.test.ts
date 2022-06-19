@@ -5,6 +5,7 @@ import { app } from '../../../src/app';
 import { MAX_BLOB_LENGTH, MAX_REPOSITORY_LENGTH } from '../../../src/common/config';
 import { logger } from '../../../src/common/logger';
 import { repositoryClient } from '../../../src/storage/repository';
+import zlib from 'zlib';
 
 let server: http.Server;
 
@@ -85,6 +86,30 @@ describe("data-storage-api-node extended", () => {
             .send(body);
 
         expect(putResp2.status).toBe(201);
+    });
+
+    // TODO: ran out of time here, would like to have verified HTTP compressoin worked correctly
+    //       with the express.txt({options}) middleware
+    xtest('returns 201 when PUT deflated object', async () => {
+        const body = 'hello world!';
+        const gzippedBody = zlib.gzipSync(body).toString();
+
+        const putResp = await request(server)
+            .put(`/data/apples`)
+            .set('Content-Type', 'text/plain')
+            // .set('Content-Encoding', 'gzip')
+            .set('Accept-Encoding', 'gzip, deflate')
+            .send(gzippedBody);
+
+        expect(putResp.status).toBe(201);
+
+        const getResp = await request(server)
+            .put(`/data/apples/${putResp.body.oid}`)
+            .set('Content-Type', 'text/plain')
+            .set('Content-Encoding', 'gzip')
+
+        expect(getResp.status).toBe(400);
+        expect(getResp.text).toBe('who knows');
     });
 
     test('returns 400 when PUT invalid repository name - invalid chars', async () => {
