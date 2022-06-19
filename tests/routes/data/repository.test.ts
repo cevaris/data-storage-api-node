@@ -39,4 +39,46 @@ describe("data-storage-api-node extended", () => {
         const expectedJson = JSON.stringify(expectedObject);
         expect(resp.text).toBe(expectedJson);
     });
+
+    test('returns 400 when PUT duplicate repository object', async () => {
+        const body = 'hello world!';
+        const repository = 'apples';
+
+        const putResp1 = await request(server)
+            .put(`/data/${repository}`)
+            .send(body);
+
+        expect(putResp1.status).toBe(201);
+
+
+        const putResp2 = await request(server)
+            .put(`/data/${repository}`)
+            .send(body);
+
+        expect(putResp2.status).toBe(400);
+        expect(putResp2.text).toBeTruthy();
+        expect(JSON.parse(putResp2.text)).toStrictEqual({
+            error: {
+                status: 400,
+                message: 'Duplicate. Repository Object already exists.'
+            }
+        });
+    });
+
+    test('returns 201 when PUT same object in different repositories', async () => {
+        const body = 'hello world!';
+
+        const putResp1 = await request(server)
+            .put(`/data/apples`)
+            .send(body);
+
+        expect(putResp1.status).toBe(201);
+
+        const putResp2 = await request(server)
+            .put(`/data/oranges`)
+            .send(body);
+
+        expect(putResp2.status).toBe(201);
+    });
+
 })

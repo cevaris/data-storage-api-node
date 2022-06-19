@@ -1,9 +1,25 @@
+export interface ApiErrorRenderable {
+    error: {
+        message: string;
+        status: number;
+    }
+}
+
 export class ApiError extends Error {
     status: number;
     constructor(status: number, message?: string) {
         super(message);
         this.status = status;
         Object.setPrototypeOf(this, ApiError.prototype);
+    }
+
+    toRenderable(): ApiErrorRenderable {
+        return {
+            error: {
+                status: this.status,
+                message: this.message || '',
+            }
+        }
     }
 }
 

@@ -1,7 +1,6 @@
 import express from 'express';
-import { ApiError } from './common/errors';
+import { ApiError, ApiErrorRenderable } from './common/errors';
 import { logger } from './common/logger';
-import { apiResponse } from './common/response';
 
 export const app: express.Express = express();
 
@@ -22,9 +21,15 @@ require('./routes/data/repository')(app)
  */
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (err instanceof ApiError) {
-        return apiResponse(res, err.status, err.message);
+        return res.status(err.status).json(err.toRenderable());
     }
 
     logger.error(`unhandled error: ${err}`);
-    return apiResponse(res, 500);
+    const renderable: ApiErrorRenderable = {
+        error: {
+            status: 500,
+            message: 'Internal Error',
+        }
+    }
+    return res.status(500).json(renderable);
 });
