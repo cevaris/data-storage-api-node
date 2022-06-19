@@ -5,4 +5,5 @@ module.exports = {
   verbose: true,
   // https://jestjs.io/docs/configuration#watchpathignorepatterns-arraystring
   watchPathIgnorePatterns: ["./dist"],
+  modulePathIgnorePatterns: ["./dist"],
 };

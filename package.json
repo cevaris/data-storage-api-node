@@ -8,8 +8,8 @@
   "scripts": {
     "build": "./node_modules/.bin/tsc -p .",
     "start": "node ./dist/server.js",
-    "test": "./node_modules/.bin/jest test.js",
-    "test-watch": "./node_modules/.bin/jest --watch --notify --notifyMode=change test.js"
+    "test": "./node_modules/.bin/jest test.js tests/**",
+    "test-watch": "./node_modules/.bin/jest --watch --notify --notifyMode=change test.js tests/**"
   },
   "dependencies": {
     "express": "^4.18.1"
