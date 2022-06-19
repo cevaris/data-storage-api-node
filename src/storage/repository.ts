@@ -69,7 +69,15 @@ export class InMemoryRepositoryClient implements RepositoryClient {
     }
 }
 
-export const repositoryClient: RepositoryClient = new InMemoryRepositoryClient();
+/**
+ * For this assessment, AwsS3RepositoryClient is just re-using InMemoryRepositoryClient.
+ * In production setting, AwsS3RepositoryClient will contain a real implementation of Node.js AWS S3 client. 
+ */
+export class AwsS3RepositoryClient extends InMemoryRepositoryClient { }
+
+
+// NOTE: we can swap out implementation here for dev or production env
+export const repositoryClient: RepositoryClient = new AwsS3RepositoryClient();
 
 
 
