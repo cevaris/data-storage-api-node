@@ -1,7 +1,7 @@
 // The existing tests in this file should not be modified,
 // but you can add more tests if needed.
 
-const app = require('./src/app');
+const app = require('./src/app').app;
 const logger = require('./src/common/logger').logger;
 const repositoryClient = require('./src/storage/repository').repositoryClient;
 const supertest = require('supertest')

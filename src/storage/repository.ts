@@ -20,7 +20,7 @@ export function toKey(repository: string, oid: ObjectId) {
  * Mocks remote blob store like Google Cloud Storage or AWS S3.
  * Used for testing and local dev.
  */
-export default class InMemoryRepositoryClient implements RepositoryClient {
+export class InMemoryRepositoryClient implements RepositoryClient {
     store: Map<string, PersistedRepositoryObject>;
 
     constructor() {

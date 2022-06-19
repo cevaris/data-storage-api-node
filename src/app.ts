@@ -28,5 +28,3 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     logger.error(`unhandled error: ${err}`);
     return apiResponse(res, 500);
 });
-
-module.exports = app;
