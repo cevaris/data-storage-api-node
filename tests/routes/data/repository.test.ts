@@ -32,7 +32,7 @@ describe("data-storage-api-node extended", () => {
 
         const resp = await request(server)
             .put('/data/apples')
-            .set('Content-Type', 'text/plain')
+            .set('Content-Type', 'text/html')
             .send(body);
 
         expect(resp.status).toBe(201);
@@ -138,6 +138,24 @@ describe("data-storage-api-node extended", () => {
             error: {
                 status: 400,
                 message: 'Repository name length must be less than 100.',
+            }
+        });
+    });
+
+    test('returns 400 when PUT us using an unsupported Content-Type', async () => {
+        const repository = 'a'.repeat(MAX_REPOSITORY_LENGTH + 1);
+
+        const putResp = await request(server)
+            .put(`/data/${repository}`)
+            .set('Content-Type', 'def/not/supported')
+            .send(repository);
+
+        expect(putResp.status).toBe(400);
+        expect(putResp.text).toBeTruthy();
+        expect(JSON.parse(putResp.text)).toStrictEqual({
+            error: {
+                status: 400,
+                message: "Content-Type 'def/not/supported' is not supported.",
             }
         });
     });

@@ -1,30 +1,54 @@
 import express from 'express';
 import { MAX_BLOB_LENGTH } from '../../common/config';
+import { NotSupportedContentType } from '../../common/errors';
 import { toSha256Hex } from '../../common/hashing';
-import { logger } from '../../common/logger';
 import { ApiRepositoryObject, ApiRepositoryObjectDownload, presentRepositoryObject, presentRepositoryObjectDownload } from '../../presenters/repository';
 import { ObjectId, PersistedRepositoryObject } from '../../storage/persisted';
 import { repositoryClient, validateRepositoryName } from '../../storage/repository';
 
+
+const acceptableContentTypes = new Set([
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+    'application/zip',
+    'image/gif',
+    'image/jpeg',
+    'image/png',
+    'image/svg+xml',
+    'text/html',
+    'text/plain',
+    'video/mp4',
+    'video/quicktime', //.mov
+]);
+
+/**
+ * parses request body and assigns to req.body value as a string, if correct request content type.
+ * only used on the PUT /data/:repository operation
+ * 
+ * supports all files types that Github supports
+ * https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files
+ */
 const putBodyParser = express.text({
     limit: MAX_BLOB_LENGTH,
     inflate: true,
-    // type: ['text/plain', 'text/html'],
+    type: [...acceptableContentTypes],
 });
 
 module.exports = (app: express.Express) => {
 
     // TODO: consider handling gzip/compressed data gracefully
 
-    app.put('/data/:repository',
-
-        // NOTE: inject middleware, parses request body and assigns to req.body value as a string
-        // bodyToText,
-        putBodyParser,
-
+    app.put('/data/:repository', putBodyParser,
         async (req: PutRepositoryRequest, res: express.Response, next: express.NextFunction) => {
+            const contentType = req.get('content-type');
+            if (contentType && !acceptableContentTypes.has(contentType.toLocaleLowerCase())) {
+                return next(new NotSupportedContentType(`Content-Type '${contentType}' is not supported.`));
+            }
+
+            // console.log('req content type', JSON.stringify(req));
             const blob = req.body;
             const repository = req.params.repository;
+
 
             try {
                 validateRepositoryName(repository);
@@ -97,6 +121,7 @@ interface GetRepositoryRequest extends express.Request {
 }
 
 interface PutRepositoryRequest extends Express.Request {
+    get(name: string): string | undefined;
     params: {
         repository: string
     }
