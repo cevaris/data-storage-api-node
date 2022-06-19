@@ -32,6 +32,7 @@ describe("data-storage-api-node extended", () => {
 
         const resp = await request(server)
             .put('/data/apples')
+            .set('Content-Type', 'text/plain')
             .send(body);
 
         expect(resp.status).toBe(201);
@@ -47,6 +48,7 @@ describe("data-storage-api-node extended", () => {
 
         const putResp1 = await request(server)
             .put(`/data/${repository}`)
+            .set('Content-Type', 'text/plain')
             .send(body);
 
         expect(putResp1.status).toBe(201);
@@ -54,6 +56,7 @@ describe("data-storage-api-node extended", () => {
 
         const putResp2 = await request(server)
             .put(`/data/${repository}`)
+            .set('Content-Type', 'text/plain')
             .send(body);
 
         expect(putResp2.status).toBe(400);
@@ -71,12 +74,14 @@ describe("data-storage-api-node extended", () => {
 
         const putResp1 = await request(server)
             .put(`/data/apples`)
+            .set('Content-Type', 'text/plain')
             .send(body);
 
         expect(putResp1.status).toBe(201);
 
         const putResp2 = await request(server)
             .put(`/data/oranges`)
+            .set('Content-Type', 'text/plain')
             .send(body);
 
         expect(putResp2.status).toBe(201);
@@ -88,6 +93,7 @@ describe("data-storage-api-node extended", () => {
 
         const putResp = await request(server)
             .put(`/data/${repository}`)
+            .set('Content-Type', 'text/plain')
             .send(body);
 
         expect(putResp.status).toBe(400);
@@ -105,14 +111,15 @@ describe("data-storage-api-node extended", () => {
 
         const putResp = await request(server)
             .put(`/data/apples`)
+            .set('Content-Type', 'text/plain')
             .send(body);
 
-        expect(putResp.status).toBe(400);
+        expect(putResp.status).toBe(413);
         expect(putResp.text).toBeTruthy();
         expect(JSON.parse(putResp.text)).toStrictEqual({
             error: {
-                status: 400,
-                message: 'Body exceeded the 10000000 length limit.'
+                status: 413,
+                message: 'request entity too large'
             }
         });
     });
@@ -122,6 +129,7 @@ describe("data-storage-api-node extended", () => {
 
         const putResp = await request(server)
             .put(`/data/${repository}`)
+            .set('Content-Type', 'text/plain')
             .send(repository);
 
         expect(putResp.status).toBe(400);
@@ -142,6 +150,7 @@ describe("data-storage-api-node extended", () => {
         // note custom OIDs are not allowed
         const resp = await request(server)
             .put('/data/apples/customOID')
+            .set('Content-Type', 'text/plain')
             .send(body);
 
         expect(resp.status).toBe(404);

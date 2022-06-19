@@ -1,3 +1,4 @@
+import { HttpError } from "http-errors";
 import { AppError } from "../common/errors";
 
 export interface ApiError {
@@ -12,6 +13,16 @@ export function presentAppError(apiError: AppError): ApiError {
         error: {
             status: apiError.status,
             message: apiError.message
+        }
+    }
+    return value;
+}
+
+export function presentHttpError(httpError: HttpError): ApiError {
+    const value: ApiError = {
+        error: {
+            status: httpError.status,
+            message: httpError.message
         }
     }
     return value;

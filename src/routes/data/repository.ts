@@ -1,15 +1,26 @@
 import express from 'express';
+import { MAX_BLOB_LENGTH } from '../../common/config';
 import { toSha256Hex } from '../../common/hashing';
-import { bodyToText } from '../../middleware/bodyToString';
+import { logger } from '../../common/logger';
 import { ApiRepositoryObject, ApiRepositoryObjectDownload, presentRepositoryObject, presentRepositoryObjectDownload } from '../../presenters/repository';
 import { ObjectId, PersistedRepositoryObject } from '../../storage/persisted';
 import { repositoryClient, validateRepositoryName } from '../../storage/repository';
 
+const putBodyParser = express.text({
+    limit: MAX_BLOB_LENGTH,
+    inflate: true,
+    // type: ['text/plain', 'text/html'],
+});
+
 module.exports = (app: express.Express) => {
+
+    // TODO: consider handling gzip/compressed data gracefully
+
     app.put('/data/:repository',
 
         // NOTE: inject middleware, parses request body and assigns to req.body value as a string
-        bodyToText,
+        // bodyToText,
+        putBodyParser,
 
         async (req: PutRepositoryRequest, res: express.Response, next: express.NextFunction) => {
             const blob = req.body;

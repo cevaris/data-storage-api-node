@@ -1,5 +1,7 @@
 interface Logger {
     info(...args: any[]): void;
+    log(...args: any[]): void;
+
     error(...args: any[]): void;
 }
 
@@ -8,6 +10,13 @@ interface Logger {
  */
 class ConsoleLogger implements Logger {
     info(...args: any[]): void {
+        console.log(this.prefix('INFO'), `${args}`);
+    }
+
+    /**
+     * convience function. same as calling logger.info(...)
+     */
+    log(...args: any[]): void {
         console.log(this.prefix('INFO'), `${args}`);
     }
 
