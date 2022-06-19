@@ -38,6 +38,12 @@ export class DuplicateRepositoryObjectError extends ApiError {
         Object.setPrototypeOf(this, DuplicateRepositoryObjectError.prototype);
     }
 }
+export class InvalidRepositoryName extends ApiError {
+    constructor(message: string) {
+        super(400, message);
+        Object.setPrototypeOf(this, InvalidRepositoryName.prototype);
+    }
+}
 
 
 /**

@@ -2,7 +2,7 @@ import express from 'express';
 import { toSha256Hex } from '../../common/hashing';
 import { bodyToText } from '../../middleware/bodyToString';
 import { ObjectId, PersistedRepositoryObject } from '../../storage/persisted';
-import { repositoryClient } from '../../storage/repository';
+import { repositoryClient, validateRepositoryName } from '../../storage/repository';
 
 module.exports = (app: express.Express) => {
     app.put('/data/:repository',
@@ -11,8 +11,15 @@ module.exports = (app: express.Express) => {
         bodyToText,
 
         async (req: PutRepositoryRequest, res: express.Response, next: express.NextFunction) => {
-            // TODO: validate params
             const repository = req.params.repository;
+
+            // TODO: validate params
+            try {
+                validateRepositoryName(repository);
+            } catch (error) {
+                return next(error);
+            }
+
             const blob = req.body;
             const now: Date = new Date();
             const oid: ObjectId = toSha256Hex(blob);

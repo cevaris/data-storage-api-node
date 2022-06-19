@@ -1,4 +1,4 @@
-import { DuplicateRepositoryObjectError, NotFoundError } from "../common/errors";
+import { DuplicateRepositoryObjectError, InvalidRepositoryName, NotFoundError } from "../common/errors";
 import { logger } from "../common/logger";
 import { ObjectId, PersistedRepositoryObject } from "./persisted";
 
@@ -70,3 +70,17 @@ export class InMemoryRepositoryClient implements RepositoryClient {
 }
 
 export const repositoryClient: RepositoryClient = new InMemoryRepositoryClient();
+
+
+
+
+// repository must start with at least one a-zA-Z0-9 char, then allow symbols
+// https://stackoverflow.com/a/59082561/3538289
+const REPOSITORY_NAME_REGEX = /^[a-zA-Z0-9]+[a-zA-Z0-9\-\._]*$/;
+
+export function validateRepositoryName(repository: string): void {
+    const trimmedRepository: string = repository.trim();
+    if (!REPOSITORY_NAME_REGEX.test(trimmedRepository)) {
+        throw new InvalidRepositoryName(`Repository contains invalid characters.`)
+    }
+}

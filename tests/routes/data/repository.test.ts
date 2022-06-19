@@ -81,4 +81,22 @@ describe("data-storage-api-node extended", () => {
         expect(putResp2.status).toBe(201);
     });
 
+    test('returns 400 when PUT invalid repository name - invalid chars', async () => {
+        const body = 'hello world!';
+        const repository = '!@#🚀$%';
+
+        const putResp = await request(server)
+            .put(`/data/${repository}`)
+            .send(body);
+
+        expect(putResp.status).toBe(400);
+        expect(putResp.text).toBeTruthy();
+        expect(JSON.parse(putResp.text)).toStrictEqual({
+            error: {
+                status: 400,
+                message: 'Repository contains invalid characters.'
+            }
+        });
+    });
+
 })
