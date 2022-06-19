@@ -15,6 +15,12 @@ describe('storage - repository', () => {
             .toThrowError(new InvalidRepositoryName(`Repository contains invalid characters.`));
         expect(() => validateRepositoryName('.'))
             .toThrowError(new InvalidRepositoryName(`Repository contains invalid characters.`));
+        expect(() => validateRepositoryName('  test'))
+            .toThrowError(new InvalidRepositoryName(`Repository contains invalid characters.`));
+        expect(() => validateRepositoryName('test  '))
+            .toThrowError(new InvalidRepositoryName(`Repository contains invalid characters.`));
+        expect(() => validateRepositoryName('t e s t'))
+            .toThrowError(new InvalidRepositoryName(`Repository contains invalid characters.`));
     });
 
     test('invalid repository name - too long', () => {
