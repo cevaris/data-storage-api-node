@@ -34,13 +34,14 @@ describe("data-storage-api-node extended", () => {
         const resp = await request(server)
             .put('/data/apples')
             .set('Content-Type', 'text/html')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(resp.status).toBe(201);
-
-        const expectedObject = { oid: '7509e5bda0c762d2bac7f90d758b5b2263fa01ccbc542ab5e3df163be08e6ca9', size: 12 };
-        const expectedJson = JSON.stringify(expectedObject);
-        expect(resp.text).toBe(expectedJson);
+        expect(resp.body).toStrictEqual({
+            oid: '7509e5bda0c762d2bac7f90d758b5b2263fa01ccbc542ab5e3df163be08e6ca9',
+            size: 12
+        });
     });
 
     test('returns 400 when PUT duplicate repository object', async () => {
@@ -50,19 +51,20 @@ describe("data-storage-api-node extended", () => {
         const putResp1 = await request(server)
             .put(`/data/${repository}`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(putResp1.status).toBe(201);
 
-
         const putResp2 = await request(server)
             .put(`/data/${repository}`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(putResp2.status).toBe(400);
-        expect(putResp2.text).toBeTruthy();
-        expect(JSON.parse(putResp2.text)).toStrictEqual({
+        expect(putResp2.body).toBeTruthy();
+        expect(putResp2.body).toStrictEqual({
             error: {
                 status: 400,
                 message: 'Duplicate. Repository Object already exists.'
@@ -76,6 +78,7 @@ describe("data-storage-api-node extended", () => {
         const putResp1 = await request(server)
             .put(`/data/apples`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(putResp1.status).toBe(201);
@@ -83,9 +86,18 @@ describe("data-storage-api-node extended", () => {
         const putResp2 = await request(server)
             .put(`/data/oranges`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(putResp2.status).toBe(201);
+
+        // const getResp = await request(server)
+        //     .get(`/data/oranges/${putResp2.body.oid}`)
+        //     // .set('Content-Type', 'text/plain')
+        //     // .set('Accept', 'application/json')
+
+        // expect(getResp.status).toBe(200);
+        // expect(getResp.body).toBe(body);
     });
 
     // TODO: ran out of time here, would like to have verified HTTP compressoin worked correctly
@@ -97,6 +109,7 @@ describe("data-storage-api-node extended", () => {
         const putResp = await request(server)
             .put(`/data/apples`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             // .set('Content-Encoding', 'gzip')
             .set('Accept-Encoding', 'gzip, deflate')
             .send(gzippedBody);
@@ -106,6 +119,7 @@ describe("data-storage-api-node extended", () => {
         const getResp = await request(server)
             .put(`/data/apples/${putResp.body.oid}`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .set('Content-Encoding', 'gzip')
 
         expect(getResp.status).toBe(400);
@@ -119,11 +133,12 @@ describe("data-storage-api-node extended", () => {
         const putResp = await request(server)
             .put(`/data/${repository}`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(putResp.status).toBe(400);
-        expect(putResp.text).toBeTruthy();
-        expect(JSON.parse(putResp.text)).toStrictEqual({
+        expect(putResp.body).toBeTruthy();
+        expect(putResp.body).toStrictEqual({
             error: {
                 status: 400,
                 message: 'Repository contains invalid characters.'
@@ -137,11 +152,12 @@ describe("data-storage-api-node extended", () => {
         const putResp = await request(server)
             .put(`/data/apples`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(putResp.status).toBe(413);
-        expect(putResp.text).toBeTruthy();
-        expect(JSON.parse(putResp.text)).toStrictEqual({
+        expect(putResp.body).toBeTruthy();
+        expect(putResp.body).toStrictEqual({
             error: {
                 status: 413,
                 message: 'request entity too large'
@@ -155,11 +171,12 @@ describe("data-storage-api-node extended", () => {
         const putResp = await request(server)
             .put(`/data/${repository}`)
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(repository);
 
         expect(putResp.status).toBe(400);
-        expect(putResp.text).toBeTruthy();
-        expect(JSON.parse(putResp.text)).toStrictEqual({
+        expect(putResp.body).toBeTruthy();
+        expect(putResp.body).toStrictEqual({
             error: {
                 status: 400,
                 message: 'Repository name length must be less than 100.',
@@ -176,8 +193,8 @@ describe("data-storage-api-node extended", () => {
             .send(repository);
 
         expect(putResp.status).toBe(400);
-        expect(putResp.text).toBeTruthy();
-        expect(JSON.parse(putResp.text)).toStrictEqual({
+        expect(putResp.body).toBeTruthy();
+        expect(putResp.body).toStrictEqual({
             error: {
                 status: 400,
                 message: "Content-Type 'def/not/supported' is not supported.",
@@ -194,11 +211,12 @@ describe("data-storage-api-node extended", () => {
         const resp = await request(server)
             .put('/data/apples/customOID')
             .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
             .send(body);
 
         expect(resp.status).toBe(404);
-        expect(resp.text).toBeTruthy();
-        expect(JSON.parse(resp.text)).toStrictEqual({
+        expect(resp.body).toBeTruthy();
+        expect(resp.body).toStrictEqual({
             error: {
                 status: 404,
                 message: 'Not Found.'
@@ -210,7 +228,7 @@ describe("data-storage-api-node extended", () => {
         const resp = await request(server)
             .delete('/datat/apples/doesNotExist');
         expect(resp.status).toBe(404);
-        expect(JSON.parse(resp.text)).toStrictEqual({
+        expect(resp.body).toStrictEqual({
             error: {
                 status: 404,
                 message: 'Not Found.'
