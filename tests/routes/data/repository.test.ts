@@ -137,4 +137,16 @@ describe("data-storage-api-node extended", () => {
         });
     });
 
+    test('returns 404 when DELETE a non-existent object', async () => {
+        const resp = await request(server)
+            .delete('/datat/apples/doesNotExist');
+        expect(resp.status).toBe(404);
+        expect(JSON.parse(resp.text)).toStrictEqual({
+            error: {
+                status: 404,
+                message: 'Not Found.'
+            }
+        });
+    });
+
 })
