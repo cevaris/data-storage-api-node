@@ -18,7 +18,9 @@ app.disable('x-powered-by');
 require('./routes/data/repository')(app)
 
 
-// handle undefined routes as 404
+/**
+ * Handle undefined routes as 404
+ */
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
     next(new NotFoundError())
 });
