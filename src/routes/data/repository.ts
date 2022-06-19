@@ -1,26 +1,26 @@
 import express from 'express';
 import { toSha256Hex } from '../../common/hashing';
 import { bodyToText } from '../../middleware/bodyToString';
+import { ApiRepositoryObject, ApiRepositoryObjectDownload, presentRepositoryObject, presentRepositoryObjectDownload } from '../../presenters/repository';
 import { ObjectId, PersistedRepositoryObject } from '../../storage/persisted';
 import { repositoryClient, validateRepositoryName } from '../../storage/repository';
 
 module.exports = (app: express.Express) => {
     app.put('/data/:repository',
 
-        // inject middleware, parses request body and assigns to req.body value as a string
+        // NOTE: inject middleware, parses request body and assigns to req.body value as a string
         bodyToText,
 
         async (req: PutRepositoryRequest, res: express.Response, next: express.NextFunction) => {
+            const blob = req.body;
             const repository = req.params.repository;
 
-            // TODO: validate params
             try {
                 validateRepositoryName(repository);
             } catch (error) {
                 return next(error);
             }
 
-            const blob = req.body;
             const now: Date = new Date();
             const oid: ObjectId = toSha256Hex(blob);
 
@@ -38,11 +38,8 @@ module.exports = (app: express.Express) => {
                 return next(error);
             }
 
-            const response: PutRepositoryResponse = {
-                oid,
-                size: blob.length,
-            };
-            return res.status(201).json(response);
+            const apiRepositoryObject: ApiRepositoryObject = presentRepositoryObject(persistedRepositoryObject);
+            return res.status(201).json(apiRepositoryObject);
         });
 
     app.get('/data/:repository/:oid',
@@ -50,7 +47,11 @@ module.exports = (app: express.Express) => {
             try {
                 const persistedRepositoryObject: PersistedRepositoryObject =
                     await repositoryClient.get(req.params.repository, req.params.oid);
-                return res.contentType('plain/text').status(200).send(persistedRepositoryObject.blob);
+
+                const apiRepositoryObjectDownload: ApiRepositoryObjectDownload =
+                    presentRepositoryObjectDownload(persistedRepositoryObject);
+                return res.contentType('plain/text').
+                    status(200).send(apiRepositoryObjectDownload);
             } catch (error) {
                 return next(error);
             }
@@ -61,7 +62,9 @@ module.exports = (app: express.Express) => {
             try {
                 await repositoryClient.delete(req.params.repository, req.params.oid);
 
-                return res.status(200).end();
+                // NOTE: end() here terminates the stream, preventing anything else being written
+                //       in this case, we are not returning anything back to the client, i.e void.
+                return res.status(200).end()
             } catch (error) {
                 return next(error);
             }
@@ -87,8 +90,4 @@ interface PutRepositoryRequest extends Express.Request {
         repository: string
     }
     body: string
-}
-interface PutRepositoryResponse {
-    oid: string;
-    size: number;
 }

@@ -1,6 +1,7 @@
 import express from 'express';
-import { ApiError, ApiErrorRenderable, NotFoundError } from './common/errors';
+import { AppError, NotFoundError } from './common/errors';
 import { logger } from './common/logger';
+import { ApiError, presentAppError } from './presenters/errors';
 
 export const app: express.Express = express();
 
@@ -26,16 +27,13 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
  * Custom handling for rendering ApiErrors to the destired HTTP response.
  */
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (err instanceof ApiError) {
-        return res.status(err.status).json(err.toRenderable());
+    if (err instanceof AppError) {
+        const apiError: ApiError = presentAppError(err);
+        return res.status(err.status).json(apiError);
     }
 
     logger.error(`unhandled error: ${err}`);
-    const renderable: ApiErrorRenderable = {
-        error: {
-            status: 500,
-            message: 'Internal Error',
-        }
-    }
-    return res.status(500).json(renderable);
+
+    const apiError: ApiError = presentAppError(new AppError(500, 'Internal Error'));
+    return res.status(500).json(apiError);
 });

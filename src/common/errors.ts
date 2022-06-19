@@ -1,44 +1,35 @@
-export interface ApiErrorRenderable {
-    error: {
-        message: string;
-        status: number;
-    }
-}
-
-export class ApiError extends Error {
+/**
+ * AppError can be any error thrown within the HTTP service.
+ * AppErrors get rendered as ApiErrors in HTTP responses.
+ * AppErrors require a HTTP status code.
+ */
+export class AppError extends Error {
+    // HTTP status
     status: number;
+    
     constructor(status: number, message?: string) {
         super(message);
         this.status = status;
-        Object.setPrototypeOf(this, ApiError.prototype);
-    }
-
-    toRenderable(): ApiErrorRenderable {
-        return {
-            error: {
-                status: this.status,
-                message: this.message || '',
-            }
-        }
+        Object.setPrototypeOf(this, AppError.prototype);
     }
 }
 
 /**
  * 400s
  */
-export class BodyTooLargeError extends ApiError {
+export class BodyTooLargeError extends AppError {
     constructor(message: string) {
         super(400, message);
         Object.setPrototypeOf(this, BodyTooLargeError.prototype);
     }
 }
-export class DuplicateRepositoryObjectError extends ApiError {
+export class DuplicateRepositoryObjectError extends AppError {
     constructor() {
         super(400, 'Duplicate. Repository Object already exists.');
         Object.setPrototypeOf(this, DuplicateRepositoryObjectError.prototype);
     }
 }
-export class InvalidRepositoryName extends ApiError {
+export class InvalidRepositoryName extends AppError {
     constructor(message: string) {
         super(400, message);
         Object.setPrototypeOf(this, InvalidRepositoryName.prototype);
@@ -49,7 +40,7 @@ export class InvalidRepositoryName extends ApiError {
 /**
  * 404s
  */
-export class NotFoundError extends ApiError {
+export class NotFoundError extends AppError {
     constructor() {
         super(404, "Not Found.");
         Object.setPrototypeOf(this, NotFoundError.prototype);
@@ -60,7 +51,7 @@ export class NotFoundError extends ApiError {
 /**
  * 500s
  */
-export class FailedToParseBodyError extends ApiError {
+export class FailedToParseBodyError extends AppError {
     constructor(message: string) {
         super(500, message);
         Object.setPrototypeOf(this, FailedToParseBodyError.prototype);
