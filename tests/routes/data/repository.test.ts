@@ -2,6 +2,7 @@ import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import http from 'http';
 import request from 'supertest';
 import { app } from '../../../src/app';
+import { MAX_BLOB_LENGTH } from '../../../src/common/config';
 import { logger } from '../../../src/common/logger';
 import { repositoryClient } from '../../../src/storage/repository';
 
@@ -95,6 +96,23 @@ describe("data-storage-api-node extended", () => {
             error: {
                 status: 400,
                 message: 'Repository contains invalid characters.'
+            }
+        });
+    });
+
+    test('returns 400 when PUT invalid repository name - too long', async () => {
+        const body = 'a'.repeat(MAX_BLOB_LENGTH + 1);
+
+        const putResp = await request(server)
+            .put(`/data/apples`)
+            .send(body);
+
+        expect(putResp.status).toBe(400);
+        expect(putResp.text).toBeTruthy();
+        expect(JSON.parse(putResp.text)).toStrictEqual({
+            error: {
+                status: 400,
+                message: 'Body exceeded the 10000000 length limit.'
             }
         });
     });
