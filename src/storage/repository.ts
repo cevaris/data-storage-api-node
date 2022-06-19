@@ -1,3 +1,4 @@
+import { MAX_REPOSITORY_LENGTH } from "../common/config";
 import { DuplicateRepositoryObjectError, InvalidRepositoryName, NotFoundError } from "../common/errors";
 import { logger } from "../common/logger";
 import { ObjectId, PersistedRepositoryObject } from "./persisted";
@@ -88,6 +89,16 @@ const REPOSITORY_NAME_REGEX = /^[a-zA-Z0-9]+[a-zA-Z0-9\-\._]*$/;
 
 export function validateRepositoryName(repository: string): void {
     const trimmedRepository: string = repository.trim();
+
+    if (trimmedRepository.length === 0) {
+        throw new InvalidRepositoryName(`Repository name must be non-empty.`);
+    }
+
+    // https://github.com/gitbucket/gitbucket/commit/9bfe5115ccb3940380d2d8c6c96d7c007b14605b
+    if (trimmedRepository.length > MAX_REPOSITORY_LENGTH) {
+        throw new InvalidRepositoryName(`Repository name length must be less than ${MAX_REPOSITORY_LENGTH}.`)
+    }
+
     if (!REPOSITORY_NAME_REGEX.test(trimmedRepository)) {
         throw new InvalidRepositoryName(`Repository contains invalid characters.`)
     }

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import http from 'http';
 import request from 'supertest';
 import { app } from '../../../src/app';
-import { MAX_BLOB_LENGTH } from '../../../src/common/config';
+import { MAX_BLOB_LENGTH, MAX_REPOSITORY_LENGTH } from '../../../src/common/config';
 import { logger } from '../../../src/common/logger';
 import { repositoryClient } from '../../../src/storage/repository';
 
@@ -100,7 +100,7 @@ describe("data-storage-api-node extended", () => {
         });
     });
 
-    test('returns 400 when PUT invalid repository name - too long', async () => {
+    test('returns 400 when PUT repository object body is too long', async () => {
         const body = 'a'.repeat(MAX_BLOB_LENGTH + 1);
 
         const putResp = await request(server)
@@ -113,6 +113,23 @@ describe("data-storage-api-node extended", () => {
             error: {
                 status: 400,
                 message: 'Body exceeded the 10000000 length limit.'
+            }
+        });
+    });
+
+    test('returns 400 when PUT invalid repository name - too long', async () => {
+        const repository = 'a'.repeat(MAX_REPOSITORY_LENGTH + 1);
+
+        const putResp = await request(server)
+            .put(`/data/${repository}`)
+            .send(repository);
+
+        expect(putResp.status).toBe(400);
+        expect(putResp.text).toBeTruthy();
+        expect(JSON.parse(putResp.text)).toStrictEqual({
+            error: {
+                status: 400,
+                message: 'Repository name length must be less than 100.',
             }
         });
     });
