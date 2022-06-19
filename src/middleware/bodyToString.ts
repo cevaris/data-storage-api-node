@@ -4,8 +4,10 @@ import { BodyTooLargeError, FailedToParseBodyError } from '../common/errors';
 import { logger } from '../common/logger';
 
 /**
- * Parse the request body as a string, up until some defined max body length.
+ * Express middleware to parse the request body as a string, up until some defined max body length.
  * If body length max value is met, throw a bad request error.
+ * 
+ * This should be an improvement 
  * 
  * @param req 
  * @param res 

@@ -3,6 +3,9 @@ interface Logger {
     error(...args: any[]): void;
 }
 
+/**
+ * Console logger wrapper to inject UTC timestamp + logging Level.
+ */
 class ConsoleLogger implements Logger {
     info(...args: any[]): void {
         console.log(this.prefix('INFO'), `${args}`);
