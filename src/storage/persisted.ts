@@ -29,6 +29,11 @@ export interface PersistedRepositoryObject {
     size: number;
 
     /**
+     * Request defined Content-Type
+     */
+    conentType: string;
+
+    /**
      * Date of repository object creation
      */
     createdAt: Date;

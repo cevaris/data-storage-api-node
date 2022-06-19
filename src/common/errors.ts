@@ -46,14 +46,3 @@ export class NotFoundError extends AppError {
         Object.setPrototypeOf(this, NotFoundError.prototype);
     }
 }
-
-
-/**
- * 500s
- */
-export class FailedToParseBodyError extends AppError {
-    constructor(message: string) {
-        super(500, message);
-        Object.setPrototypeOf(this, FailedToParseBodyError.prototype);
-    }
-}

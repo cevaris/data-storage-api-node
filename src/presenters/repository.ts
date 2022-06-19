@@ -1,5 +1,9 @@
 import { PersistedRepositoryObject } from "../storage/persisted";
 
+/**
+ * API shape for rendering Repository Objects back to callers
+ */
+
 export interface ApiRepositoryObject {
     oid: string;
     size: number;

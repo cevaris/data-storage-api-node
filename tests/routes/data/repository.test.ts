@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, expect, test } from '@jest/globals';
 import http from 'http';
 import request from 'supertest';
+import zlib from 'zlib';
 import { app } from '../../../src/app';
 import { MAX_BLOB_LENGTH, MAX_REPOSITORY_LENGTH } from '../../../src/common/config';
 import { logger } from '../../../src/common/logger';
 import { repositoryClient } from '../../../src/storage/repository';
-import zlib from 'zlib';
 
 let server: http.Server;
 
@@ -90,19 +90,12 @@ describe("data-storage-api-node extended", () => {
             .send(body);
 
         expect(putResp2.status).toBe(201);
-
-        // const getResp = await request(server)
-        //     .get(`/data/oranges/${putResp2.body.oid}`)
-        //     // .set('Content-Type', 'text/plain')
-        //     // .set('Accept', 'application/json')
-
-        // expect(getResp.status).toBe(200);
-        // expect(getResp.body).toBe(body);
     });
 
-    // TODO: ran out of time here, would like to have verified HTTP compressoin worked correctly
-    //       with the express.txt({options}) middleware
     xtest('returns 201 when PUT deflated object', async () => {
+        // TODO: Test HTTP compressoin works as expected correctly
+        //       with the express.txt({options}) middleware
+
         const body = 'hello world!';
         const gzippedBody = zlib.gzipSync(body).toString();
 
@@ -119,7 +112,6 @@ describe("data-storage-api-node extended", () => {
         const getResp = await request(server)
             .put(`/data/apples/${putResp.body.oid}`)
             .set('Content-Type', 'text/plain')
-            .set('Accept', 'application/json')
             .set('Content-Encoding', 'gzip')
 
         expect(getResp.status).toBe(400);
@@ -198,6 +190,25 @@ describe("data-storage-api-node extended", () => {
             error: {
                 status: 400,
                 message: "Content-Type 'def/not/supported' is not supported.",
+            }
+        });
+    });
+
+    test('returns 400 when PUT invalid repository name - prefixed with spaces', async () => {
+        const repositoryWithEncodedSpaceChar = '%20apples'
+
+        const putResp = await request(server)
+            .put(`/data/${repositoryWithEncodedSpaceChar}`)
+            .set('Content-Type', 'text/plain')
+            .set('Accept', 'application/json')
+            .send(repositoryWithEncodedSpaceChar);
+
+        expect(putResp.status).toBe(400);
+        expect(putResp.body).toBeTruthy();
+        expect(putResp.body).toStrictEqual({
+            error: {
+                status: 400,
+                message: 'Repository contains invalid characters.',
             }
         });
     });

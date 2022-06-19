@@ -7,6 +7,10 @@ import { ObjectId, PersistedRepositoryObject } from '../../storage/persisted';
 import { repositoryClient, validateRepositoryName } from '../../storage/repository';
 
 
+/**
+ * supports all files types that Github supports
+ * https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files
+ */
 const acceptableContentTypes = new Set([
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
@@ -23,20 +27,16 @@ const acceptableContentTypes = new Set([
 
 /**
  * parses request body and assigns to req.body value as a string, if correct request content type.
- * only used on the PUT /data/:repository operation
- * 
- * supports all files types that Github supports
- * https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files
+ * only used on the PUT /data/:repository operation.
  */
 const putBodyParser = express.text({
     limit: MAX_BLOB_LENGTH,
+    // shound handle request compressed files (images, larage binaries, etc.)
     inflate: true,
     type: [...acceptableContentTypes],
 });
 
 module.exports = (app: express.Express) => {
-
-    // TODO: consider handling gzip/compressed data gracefully
 
     app.put('/data/:repository', putBodyParser,
         async (req: PutRepositoryRequest, res: express.Response, next: express.NextFunction) => {
@@ -45,10 +45,8 @@ module.exports = (app: express.Express) => {
                 return next(new NotSupportedContentType(`Content-Type '${contentType}' is not supported.`));
             }
 
-            // console.log('req content type', JSON.stringify(req));
             const blob = req.body;
             const repository = req.params.repository;
-
 
             try {
                 validateRepositoryName(repository);
@@ -64,6 +62,7 @@ module.exports = (app: express.Express) => {
                 repository,
                 blob,
                 size: blob.length,
+                conentType: contentType || 'text/plain',
                 createdAt: now,
             };
 
@@ -73,7 +72,8 @@ module.exports = (app: express.Express) => {
                 return next(error);
             }
 
-            const apiRepositoryObject: ApiRepositoryObject = presentRepositoryObject(persistedRepositoryObject);
+            const apiRepositoryObject: ApiRepositoryObject =
+                presentRepositoryObject(persistedRepositoryObject);
             return res.status(201).json(apiRepositoryObject);
         });
 
@@ -85,8 +85,10 @@ module.exports = (app: express.Express) => {
 
                 const apiRepositoryObjectDownload: ApiRepositoryObjectDownload =
                     presentRepositoryObjectDownload(persistedRepositoryObject);
-                return res.contentType('plain/text').
-                    status(200).send(apiRepositoryObjectDownload);
+
+                return res.contentType(persistedRepositoryObject.conentType)
+                    .status(200)
+                    .send(apiRepositoryObjectDownload);
             } catch (error) {
                 return next(error);
             }
@@ -97,9 +99,7 @@ module.exports = (app: express.Express) => {
             try {
                 await repositoryClient.delete(req.params.repository, req.params.oid);
 
-                // NOTE: end() here terminates the stream, preventing anything else being written
-                //       in this case, we are not returning anything back to the client, i.e void.
-                return res.status(200).end()
+                return res.status(200).send()
             } catch (error) {
                 return next(error);
             }

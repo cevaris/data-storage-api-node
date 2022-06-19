@@ -1,6 +1,9 @@
 import { HttpError } from "http-errors";
 import { AppError } from "../common/errors";
 
+/**
+ * API shape for rendering errors back to callers
+ */
 export interface ApiError {
     error: {
         message: string;

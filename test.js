@@ -74,6 +74,7 @@ describe('data-storage-api-node', () => {
       .get(`/data/my-repo/${putResult1.body.oid}`)
       .expect(200)
       .then(response => {
+        // TODO: determine why resonse.body is empty here
         expect(response.text).toEqual('something')
       })
   })
@@ -115,6 +116,7 @@ describe('data-storage-api-node', () => {
       .get(`/data/other-repo/${dupHash}`)
       .expect(200)
       .then(response => {
+        // TODO: determine why resonse.body is empty here
         expect(response.text).toEqual('something')
       })
   })

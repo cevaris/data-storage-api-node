@@ -10,12 +10,6 @@ export interface RepositoryClient {
     get(repository: string, oid: ObjectId): Promise<PersistedRepositoryObject>;
 }
 
-export function persistedRepositoryObjectToKey(persistedRepositoryObject: PersistedRepositoryObject) {
-    return toKey(persistedRepositoryObject.repository, persistedRepositoryObject.oid);
-}
-export function toKey(repository: string, oid: ObjectId) {
-    return `${repository}/${oid}`;
-}
 
 /**
  * Mocks remote blob store like Google Cloud Storage or AWS S3.
@@ -35,11 +29,6 @@ export class InMemoryRepositoryClient implements RepositoryClient {
     async create(persistedRepositoryObject: PersistedRepositoryObject): Promise<PersistedRepositoryObject> {
         const key = persistedRepositoryObjectToKey(persistedRepositoryObject);
 
-        // NOTE: because we are doing a read + write operation here, it opens us up to race conditions.
-        //       this is not an issue with the in-memory implementation, rather when we end up productionalizing a S3 or GCS client.
-        //       
-        //       when using S3 or GCS, we should def use a database transaction to properly handle and duplicate entries to resolve 
-        //       any issues overwriting producution blob store repository objects.
         if (this.store.has(key)) {
             logger.error(`Duplicate PersistedRepositoryObject found for repository:${persistedRepositoryObject.repository} oid:${persistedRepositoryObject.oid}.`);
             throw new DuplicateRepositoryObjectError();
@@ -53,7 +42,7 @@ export class InMemoryRepositoryClient implements RepositoryClient {
         const key = toKey(repository, oid);
         const result = this.store.delete(key);
         if (!result) {
-            // key was not found
+            // key was not found or already deleted
             throw new NotFoundError();
         }
     }
@@ -76,7 +65,6 @@ export class InMemoryRepositoryClient implements RepositoryClient {
  */
 export class AwsS3RepositoryClient extends InMemoryRepositoryClient { }
 
-
 // NOTE: we can swap out implementation here for dev or production env
 export const repositoryClient: RepositoryClient = new AwsS3RepositoryClient();
 
@@ -88,18 +76,24 @@ export const repositoryClient: RepositoryClient = new AwsS3RepositoryClient();
 const REPOSITORY_NAME_REGEX = /^[a-zA-Z0-9]+[a-zA-Z0-9\-\._]*$/;
 
 export function validateRepositoryName(repository: string): void {
-    const trimmedRepository: string = repository.trim();
-
-    if (trimmedRepository.length === 0) {
+    if (repository.length === 0) {
         throw new InvalidRepositoryName(`Repository name must be non-empty.`);
     }
 
     // https://github.com/gitbucket/gitbucket/commit/9bfe5115ccb3940380d2d8c6c96d7c007b14605b
-    if (trimmedRepository.length > MAX_REPOSITORY_LENGTH) {
+    if (repository.length > MAX_REPOSITORY_LENGTH) {
         throw new InvalidRepositoryName(`Repository name length must be less than ${MAX_REPOSITORY_LENGTH}.`)
     }
 
-    if (!REPOSITORY_NAME_REGEX.test(trimmedRepository)) {
+    if (!REPOSITORY_NAME_REGEX.test(repository)) {
         throw new InvalidRepositoryName(`Repository contains invalid characters.`)
     }
 }
+
+export function persistedRepositoryObjectToKey(persistedRepositoryObject: PersistedRepositoryObject) {
+    return toKey(persistedRepositoryObject.repository, persistedRepositoryObject.oid);
+}
+export function toKey(repository: string, oid: ObjectId) {
+    return `${repository}/${oid}`;
+}
+

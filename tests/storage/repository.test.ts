@@ -36,6 +36,7 @@ describe('storage - repository', () => {
             createdAt: new Date(),
             repository: 'a',
             oid: 'b',
+            conentType: 'text/plain',
             blob: 'blob',
             size: 4,
         };
